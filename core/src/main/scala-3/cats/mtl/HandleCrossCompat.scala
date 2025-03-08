@@ -20,12 +20,8 @@ package mtl
 private[mtl] trait HandleCrossCompat { this: Handle.type =>
   import Handle.Submarine
 
-  inline def allow[E]: AdHocSyntaxWired[E] =
-    new AdHocSyntaxWired[E]()
-
-  private[mtl] final class AdHocSyntaxWired[E]:
-    inline def apply[F[_], A](inline body: Handle[F, E] ?=> F[A]): InnerWired[F, E, A] =
-      new InnerWired(body)
+  def allow[E]: [F[_], A] => (Handle[F, E] ?=> F[A]) => InnerWired[F, E, A] =
+    [F[_], A] => (body: Handle[F, E] ?=> F[A]) => InnerWired(body)
 
   private[mtl] final class InnerWired[F[_], E, A](body: Handle[F, E] ?=> F[A]):
     def rescue(h: E => F[A]): ApplicativeThrow[F] ?=> F[A] =
